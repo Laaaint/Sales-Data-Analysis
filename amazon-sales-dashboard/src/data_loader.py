@@ -9,39 +9,39 @@ LOCAL_SAMPLE = r"C:\Users\Natália Rosa\Laaaint IO\Sales-Data-Analysis\data\samp
 
 def load_data(url: Optional[str] = None) -> pd.DataFrame:
     """
-    Carrega um dataset CSV via URL ou arquivo local.
-    Se a coluna 'order_date' não existir, cria uma automaticamente.
+    Carrega dataset de URL ou arquivo local.
+    Corrige order_date e cria revenue.
     """
 
+    # escolha da fonte
     source = url or DATA_URL or LOCAL_SAMPLE
 
-    # 1. Carregar CSV
+    # carregar CSV
     try:
         df = pd.read_csv(source)
     except Exception:
         df = pd.read_csv(LOCAL_SAMPLE)
 
-    # 2. Garantir coluna order_date
-    if 'order_date' in df.columns:
-        df['order_date'] = pd.to_datetime(df['order_date'], errors='coerce')
+    # ==========================
+    #   GARANTIR COLUNA ORDER_DATE
+    # ==========================
+    if "order_date" in df.columns:
+        df["order_date"] = pd.to_datetime(df["order_date"], errors="coerce")
     else:
-        # cria datas crescentes para evitar erro nos gráficos
-        df['order_date'] = pd.date_range(
-            start="2024-01-01",
-            periods=len(df),
-            freq="D"
+        df["order_date"] = pd.date_range(
+            start="2024-01-01", periods=len(df), freq="D"
         )
 
-    # 3. Preço
-    df['price'] = pd.to_numeric(df.get('price', 0), errors='coerce').fillna(0.0)
+    # ==========================
+    #   TIPOS NUMÉRICOS
+    # ==========================
+    df["price"] = pd.to_numeric(df.get("price", 0), errors="coerce").fillna(0.0)
+    df["quantity"] = pd.to_numeric(df.get("quantity", 1), errors="coerce").fillna(1).astype(int)
+    df["rating"] = pd.to_numeric(df.get("rating", 0), errors="coerce").fillna(0.0)
 
-    # 4. Quantidade
-    df['quantity'] = pd.to_numeric(df.get('quantity', 1), errors='coerce').fillna(1).astype(int)
-
-    # 5. Rating
-    df['rating'] = pd.to_numeric(df.get('rating', 0), errors='coerce').fillna(0.0)
-
-    # 6. Receita
-    df['revenue'] = df['price'] * df['quantity']
+    # ==========================
+    #   RECEITA
+    # ==========================
+    df["revenue"] = df["price"] * df["quantity"]
 
     return df
